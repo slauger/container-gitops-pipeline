@@ -1,0 +1,105 @@
+name: Helm OCI
+
+on:
+  workflow_call:
+    inputs:
+      chart_path:
+        description: 'Path to Helm chart directory'
+        required: false
+        type: string
+        default: '.'
+      registry:
+        description: 'OCI registry'
+        required: false
+        type: string
+        default: 'ghcr.io'
+    outputs:
+      version:
+        description: 'Released version'
+        value: ${{ jobs.release.outputs.version }}
+      chart:
+        description: 'Full chart reference'
+        value: ${{ jobs.release.outputs.chart }}
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semantic.outputs.new_release_version }}
+      chart: ${{ steps.push.outputs.chart }}
+
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          dry_run: ${{ github.ref != 'refs/heads/main' }}
+          extra_plugins: |
+            @semantic-release/git
+            @semantic-release/changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ -n "${{ steps.semantic.outputs.new_release_version }}" ]; then
+            echo "version=${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" == "refs/heads/develop" ]; then
+            # For develop branch, use 0.0.0-develop.<run_number>
+            echo "version=0.0.0-develop.${{ github.run_number }}" >> $GITHUB_OUTPUT
+          else
+            # Fallback
+            echo "version=0.0.0-${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update Chart.yaml version
+        run: |
+          yq -i '.version = "${{ steps.version.outputs.version }}"' ${{ inputs.chart_path }}/Chart.yaml
+          cat ${{ inputs.chart_path }}/Chart.yaml
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.13.0'
+
+      - name: Login to OCI Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ inputs.registry }} \
+            --username ${{ github.actor }} \
+            --password-stdin
+
+      - name: Package Helm chart
+        run: |
+          helm package ${{ inputs.chart_path }} --destination .helm-packages
+
+      - name: Push to OCI Registry
+        id: push
+        run: |
+          CHART_NAME=$(yq '.name' ${{ inputs.chart_path }}/Chart.yaml)
+          CHART_VERSION="${{ steps.version.outputs.version }}"
+          CHART_PACKAGE=".helm-packages/${CHART_NAME}-${CHART_VERSION}.tgz"
+
+          helm push ${CHART_PACKAGE} oci://${{ inputs.registry }}/${{ github.repository_owner }}
+
+          echo "chart=oci://${{ inputs.registry }}/${{ github.repository_owner }}/${CHART_NAME}:${CHART_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Summary
+        run: |
+          echo "## Helm Chart Released" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Chart:** ${{ steps.push.outputs.chart }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
