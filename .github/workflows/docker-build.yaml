@@ -125,7 +125,7 @@ jobs:
                 RUNNER="ubuntu-latest"
                 ;;
               linux/arm64)
-                RUNNER="ubuntu-24.04-arm64"
+                RUNNER="ubuntu-24.04-arm"
                 ;;
               *)
                 RUNNER="ubuntu-latest"

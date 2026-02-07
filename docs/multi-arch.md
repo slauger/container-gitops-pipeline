@@ -26,7 +26,7 @@ flowchart LR
 
     subgraph build["Build Jobs (parallel)"]
         amd64["linux/amd64<br/>ubuntu-latest"]
-        arm64["linux/arm64<br/>ubuntu-24.04-arm64"]
+        arm64["linux/arm64<br/>ubuntu-24.04-arm"]
     end
 
     subgraph manifest["Manifest Job"]
@@ -43,7 +43,7 @@ flowchart LR
 | Platform | GitHub Runner |
 |----------|---------------|
 | `linux/amd64` | `ubuntu-latest` |
-| `linux/arm64` | `ubuntu-24.04-arm64` |
+| `linux/arm64` | `ubuntu-24.04-arm` |
 
 ## Requirements
 
