@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://slauger.github.io/container-gitops-pipeline/images.schema.json",
+  "title": "Container GitOps Pipeline Images",
+  "description": "Schema for images.json release asset containing pinned image digests",
+  "type": "object",
+  "required": ["version", "builder"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Release version (semver without v prefix)",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "examples": ["1.0.0", "2.1.3"]
+    },
+    "builder": {
+      "$ref": "#/$defs/image"
+    }
+  },
+  "$defs": {
+    "image": {
+      "type": "object",
+      "description": "Container image with multi-arch support",
+      "required": ["image", "tag", "digest", "full"],
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "Image name without tag",
+          "examples": ["ghcr.io/slauger/container-gitops-pipeline/builder"]
+        },
+        "tag": {
+          "type": "string",
+          "description": "Image tag (with v prefix)",
+          "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "examples": ["v1.0.0"]
+        },
+        "digest": {
+          "type": "string",
+          "description": "Multi-arch manifest digest",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "full": {
+          "type": "string",
+          "description": "Full image reference with tag and digest",
+          "examples": ["ghcr.io/slauger/container-gitops-pipeline/builder:v1.0.0@sha256:abc..."]
+        },
+        "platforms": {
+          "type": "object",
+          "description": "Platform-specific image references",
+          "properties": {
+            "linux/amd64": {
+              "$ref": "#/$defs/platform"
+            },
+            "linux/arm64": {
+              "$ref": "#/$defs/platform"
+            }
+          }
+        }
+      }
+    },
+    "platform": {
+      "type": "object",
+      "description": "Platform-specific image reference",
+      "required": ["digest", "full"],
+      "properties": {
+        "digest": {
+          "type": "string",
+          "description": "Platform-specific image digest",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "full": {
+          "type": "string",
+          "description": "Full platform-specific image reference with digest",
+          "examples": ["ghcr.io/.../builder:v1.0.0-linux-amd64@sha256:def..."]
+        }
+      }
+    }
+  }
+}
