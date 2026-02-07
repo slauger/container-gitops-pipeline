@@ -76,22 +76,24 @@ flowchart LR
 ```mermaid
 flowchart LR
     subgraph Artifacts
-        image["Docker Image<br/>:1.2.3"]
-        chart["Helm Chart<br/>1.2.3"]
+        image["Docker Image<br/>:2.1.0"]
+        chart["Helm Chart<br/>1.5.3"]
     end
 
     subgraph GitOps["GitOps Repository"]
-        values["values.yaml"]
+        values["values.yaml<br/><i>image: :2.1.0</i>"]
+        appCR["Application CR<br/><i>chart: 1.5.3</i>"]
     end
 
     subgraph Cluster["Kubernetes"]
         argocd["ArgoCD"]
-        app["Application"]
+        app["Deployment"]
     end
 
     image -->|"gitops-image-replacer"| values
-    chart --> argocd
+    chart -->|"gitops-image-replacer"| appCR
     values --> argocd
+    appCR --> argocd
     argocd -->|"sync"| app
 
     classDef artifactStyle fill:#1e88e5,stroke:#1565c0,color:#fff
@@ -99,7 +101,7 @@ flowchart LR
     classDef clusterStyle fill:#43a047,stroke:#2e7d32,color:#fff
 
     class image,chart artifactStyle
-    class values gitopsStyle
+    class values,appCR gitopsStyle
     class argocd,app clusterStyle
 ```
 
