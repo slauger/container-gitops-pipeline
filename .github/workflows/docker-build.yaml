@@ -215,10 +215,12 @@ jobs:
           docker manifest create ${IMAGE}:${VERSION} ${IMAGES}
           docker manifest push ${IMAGE}:${VERSION}
 
-          # Create short sha tag
+          # Create short sha tag (only if different from version)
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          docker manifest create ${IMAGE}:${SHORT_SHA} ${IMAGES}
-          docker manifest push ${IMAGE}:${SHORT_SHA}
+          if [ "${SHORT_SHA}" != "${VERSION}" ]; then
+            docker manifest create ${IMAGE}:${SHORT_SHA} ${IMAGES}
+            docker manifest push ${IMAGE}:${SHORT_SHA}
+          fi
 
           # Create semver tags if this is a release
           if [ -n "${{ needs.prepare.outputs.new_release_version }}" ]; then
