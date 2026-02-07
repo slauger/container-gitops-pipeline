@@ -13,6 +13,13 @@ on:
         required: false
         type: string
         default: 'ghcr.io'
+    secrets:
+      REGISTRY_USERNAME:
+        description: 'Registry username (optional, uses github.actor for ghcr.io)'
+        required: false
+      REGISTRY_PASSWORD:
+        description: 'Registry password (optional, uses github.token for ghcr.io)'
+        required: false
     outputs:
       version:
         description: 'Released version'
@@ -98,9 +105,15 @@ jobs:
 
       - name: Login to OCI Registry
         run: |
-          echo "${{ github.token }}" | helm registry login ${{ inputs.registry }} \
-            --username ${{ github.actor }} \
-            --password-stdin
+          if [ -n "${{ secrets.REGISTRY_USERNAME }}" ] && [ -n "${{ secrets.REGISTRY_PASSWORD }}" ]; then
+            echo "${{ secrets.REGISTRY_PASSWORD }}" | helm registry login ${{ inputs.registry }} \
+              --username "${{ secrets.REGISTRY_USERNAME }}" \
+              --password-stdin
+          else
+            echo "${{ github.token }}" | helm registry login ${{ inputs.registry }} \
+              --username ${{ github.actor }} \
+              --password-stdin
+          fi
 
       - name: Package Helm chart
         run: |
