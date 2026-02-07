@@ -1,0 +1,125 @@
+name: Helm OCI
+
+on:
+  workflow_call:
+    inputs:
+      chart_path:
+        description: 'Path to Helm chart directory'
+        required: false
+        type: string
+        default: '.'
+      registry:
+        description: 'OCI registry'
+        required: false
+        type: string
+        default: 'ghcr.io'
+    outputs:
+      version:
+        description: 'Released version'
+        value: ${{ jobs.release.outputs.version }}
+      chart:
+        description: 'Full chart reference'
+        value: ${{ jobs.release.outputs.chart }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semantic.outputs.new_release_version }}
+      chart: ${{ steps.push.outputs.chart }}
+
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install semantic-release
+        run: |
+          npm install -g semantic-release @semantic-release/github conventional-changelog-conventionalcommits
+
+      - name: Use default config if none exists
+        run: |
+          if [ ! -f .releaserc.json ] && [ ! -f .releaserc ] && [ ! -f .releaserc.yaml ] && [ ! -f .releaserc.yml ] && [ ! -f release.config.js ]; then
+            cat > .releaserc.json << 'EOF'
+          {
+            "branches": ["main", "master"],
+            "plugins": [
+              ["@semantic-release/commit-analyzer", {"preset": "conventionalcommits"}],
+              "@semantic-release/release-notes-generator",
+              "@semantic-release/github"
+            ]
+          }
+          EOF
+          fi
+
+      - name: Semantic Release
+        id: semantic
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+            OUTPUT=$(npx semantic-release 2>&1) || true
+            echo "$OUTPUT"
+            VERSION=$(echo "$OUTPUT" | grep -oP 'Published release \K[0-9]+\.[0-9]+\.[0-9]+' || echo "")
+            echo "new_release_version=${VERSION}" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Determine version
+        id: version
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          if [ -n "${{ steps.semantic.outputs.new_release_version }}" ]; then
+            echo "version=${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_OUTPUT
+          else
+            # For develop/feature branches: 0.0.0-<short-sha>
+            echo "version=0.0.0-${SHORT_SHA}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update Chart.yaml version
+        run: |
+          yq -i '.version = "${{ steps.version.outputs.version }}"' ${{ inputs.chart_path }}/Chart.yaml
+          cat ${{ inputs.chart_path }}/Chart.yaml
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.13.0'
+
+      - name: Login to OCI Registry
+        run: |
+          echo "${{ github.token }}" | helm registry login ${{ inputs.registry }} \
+            --username ${{ github.actor }} \
+            --password-stdin
+
+      - name: Package Helm chart
+        run: |
+          helm package ${{ inputs.chart_path }} --destination .helm-packages
+
+      - name: Push to OCI Registry
+        id: push
+        run: |
+          CHART_NAME=$(yq '.name' ${{ inputs.chart_path }}/Chart.yaml)
+          CHART_VERSION="${{ steps.version.outputs.version }}"
+          CHART_PACKAGE=".helm-packages/${CHART_NAME}-${CHART_VERSION}.tgz"
+
+          helm push ${CHART_PACKAGE} oci://${{ inputs.registry }}/${{ github.repository_owner }}
+
+          echo "chart=oci://${{ inputs.registry }}/${{ github.repository_owner }}/${CHART_NAME}:${CHART_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Summary
+        run: |
+          echo "## Helm Chart Released" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Chart:** ${{ steps.push.outputs.chart }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY

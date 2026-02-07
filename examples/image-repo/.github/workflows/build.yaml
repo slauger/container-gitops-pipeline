@@ -1,0 +1,13 @@
+name: Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  build:
+    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@main
+    with:
+      image_name: my-app
+      platforms: linux/amd64,linux/arm64

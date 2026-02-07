@@ -1,0 +1,21 @@
+{
+  "name": "container-gitops-pipeline",
+  "version": "0.0.0-semantically-released",
+  "description": "Reusable Container CI/CD Pipeline with GitOps deployment",
+  "private": true,
+  "scripts": {
+    "semantic-release": "semantic-release"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slauger/container-gitops-pipeline.git"
+  },
+  "author": "Simon Lauger <simon@lauger.de>",
+  "license": "MIT",
+  "devDependencies": {
+    "semantic-release": "^25.0.0",
+    "@semantic-release/commit-analyzer": "^13.0.0",
+    "@semantic-release/release-notes-generator": "^14.0.0",
+    "@semantic-release/github": "^12.0.0"
+  }
+}
