@@ -146,7 +146,7 @@ jobs:
             ${IMAGE}:${VERSION}-linux-amd64 \
             ${IMAGE}:${VERSION}-linux-arm64
 
-          docker manifest push ${IMAGE}:${VERSION}
+          DIGEST=$(docker manifest push ${IMAGE}:${VERSION})
 
           # Create latest manifest
           docker manifest create ${IMAGE}:latest \
@@ -155,8 +155,6 @@ jobs:
 
           docker manifest push ${IMAGE}:latest
 
-          # Get manifest digest
-          DIGEST=$(docker manifest inspect ${IMAGE}:${VERSION} -v | jq -r '.Descriptor.digest')
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
 
   upload-release-asset:
