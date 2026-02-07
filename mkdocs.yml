@@ -52,6 +52,8 @@ nav:
   - Workflows:
     - Docker Build: docker-build.md
     - Helm OCI: helm-oci.md
+  - Setup:
+    - GitHub App: github-app.md
   - Reference:
     - Multi-Architecture: multi-arch.md
     - Configuration: configuration.md
