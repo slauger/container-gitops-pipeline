@@ -18,9 +18,11 @@ RUN apk add --no-cache \
     docker-cli \
     helm
 
-# Install hadolint
+# Install hadolint (architecture-aware)
 ARG HADOLINT_VERSION
-RUN curl -sSL https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64 \
+ARG TARGETARCH
+RUN HADOLINT_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "x86_64") && \
+    curl -sSL "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-${HADOLINT_ARCH}" \
     -o /usr/local/bin/hadolint && \
     chmod +x /usr/local/bin/hadolint
 
