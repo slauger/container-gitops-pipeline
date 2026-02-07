@@ -1,4 +1,10 @@
-FROM alpine:3.19
+# renovate: datasource=docker depName=alpine
+ARG ALPINE_VERSION=3.19
+
+# renovate: datasource=github-releases depName=hadolint/hadolint
+ARG HADOLINT_VERSION=v2.12.0
+
+FROM alpine:${ALPINE_VERSION}
 
 # Install dependencies
 RUN apk add --no-cache \
@@ -13,16 +19,19 @@ RUN apk add --no-cache \
     helm
 
 # Install hadolint
-RUN curl -sSL https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64 \
+ARG HADOLINT_VERSION
+RUN curl -sSL https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64 \
     -o /usr/local/bin/hadolint && \
     chmod +x /usr/local/bin/hadolint
 
-# Install semantic-release
-RUN npm install -g \
-    semantic-release \
-    @semantic-release/git \
-    @semantic-release/changelog \
-    @semantic-release/exec
+# Install semantic-release (pinned versions via npm ci)
+WORKDIR /opt/semantic-release
+COPY package.json package-lock.json ./
+RUN npm ci && npm cache clean --force
+ENV PATH="/opt/semantic-release/node_modules/.bin:${PATH}"
+
+# Default semantic-release config (used if no .releaserc.json in repo)
+COPY default-releaserc.json /etc/semantic-release/default-releaserc.json
 
 # Verify installations
 RUN helm version && \

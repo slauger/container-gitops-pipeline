@@ -10,5 +10,3 @@ jobs:
     uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@main
     with:
       chart_path: '.'
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

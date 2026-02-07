@@ -20,9 +20,6 @@ on:
       chart:
         description: 'Full chart reference'
         value: ${{ jobs.release.outputs.chart }}
-    secrets:
-      GITHUB_TOKEN:
-        required: true
 
 jobs:
   release:
@@ -42,28 +39,51 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install semantic-release
+        run: |
+          npm install -g semantic-release @semantic-release/github conventional-changelog-conventionalcommits
+
+      - name: Use default config if none exists
+        run: |
+          if [ ! -f .releaserc.json ] && [ ! -f .releaserc ] && [ ! -f .releaserc.yaml ] && [ ! -f .releaserc.yml ] && [ ! -f release.config.js ]; then
+            cat > .releaserc.json << 'EOF'
+          {
+            "branches": ["main", "master"],
+            "plugins": [
+              ["@semantic-release/commit-analyzer", {"preset": "conventionalcommits"}],
+              "@semantic-release/release-notes-generator",
+              "@semantic-release/github"
+            ]
+          }
+          EOF
+          fi
+
       - name: Semantic Release
         id: semantic
-        uses: cycjimmy/semantic-release-action@v4
-        with:
-          dry_run: ${{ github.ref != 'refs/heads/main' }}
-          extra_plugins: |
-            @semantic-release/git
-            @semantic-release/changelog
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+            OUTPUT=$(npx semantic-release 2>&1) || true
+            echo "$OUTPUT"
+            VERSION=$(echo "$OUTPUT" | grep -oP 'Published release \K[0-9]+\.[0-9]+\.[0-9]+' || echo "")
+            echo "new_release_version=${VERSION}" >> $GITHUB_OUTPUT
+          fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Determine version
         id: version
         run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           if [ -n "${{ steps.semantic.outputs.new_release_version }}" ]; then
             echo "version=${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref }}" == "refs/heads/develop" ]; then
-            # For develop branch, use 0.0.0-develop.<run_number>
-            echo "version=0.0.0-develop.${{ github.run_number }}" >> $GITHUB_OUTPUT
           else
-            # Fallback
-            echo "version=0.0.0-${{ github.sha }}" >> $GITHUB_OUTPUT
+            # For develop/feature branches: 0.0.0-<short-sha>
+            echo "version=0.0.0-${SHORT_SHA}" >> $GITHUB_OUTPUT
           fi
 
       - name: Update Chart.yaml version
@@ -78,7 +98,7 @@ jobs:
 
       - name: Login to OCI Registry
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ inputs.registry }} \
+          echo "${{ github.token }}" | helm registry login ${{ inputs.registry }} \
             --username ${{ github.actor }} \
             --password-stdin
 
