@@ -141,8 +141,8 @@ jobs:
 
 ## Documentation
 
-| | |
-|---|---|
+| Guide | Description |
+|-------|-------------|
 | [Docker Build](https://slauger.github.io/container-gitops-pipeline/docker-build/) | Build and push container images |
 | [Helm OCI](https://slauger.github.io/container-gitops-pipeline/helm-oci/) | Package and push Helm charts |
 | [Multi-Architecture](https://slauger.github.io/container-gitops-pipeline/multi-arch/) | Native amd64 and arm64 builds |
