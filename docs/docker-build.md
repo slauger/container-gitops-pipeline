@@ -92,9 +92,9 @@ The workflow runs semantic-release on the `main` branch to determine the next ve
 
 No `.releaserc.json` is required - a default configuration is used automatically.
 
-## Custom Registry
+## Private Registry
 
-To use a different registry (e.g., Docker Hub, AWS ECR):
+For private registries (Docker Hub, Harbor, AWS ECR, etc.), pass credentials as secrets:
 
 ```yaml
 jobs:
@@ -102,11 +102,46 @@ jobs:
     uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
     with:
       image_name: my-app
+      registry: registry.example.com
+    secrets:
+      registry_username: ${{ secrets.REGISTRY_USERNAME }}
+      registry_password: ${{ secrets.REGISTRY_PASSWORD }}
+```
+
+### Examples
+
+=== "Docker Hub"
+
+    ```yaml
+    with:
+      image_name: my-app
       registry: docker.io
     secrets:
-      REGISTRY_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      REGISTRY_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-```
+      registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
+      registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
+    ```
+
+=== "Harbor"
+
+    ```yaml
+    with:
+      image_name: my-app
+      registry: harbor.example.com
+    secrets:
+      registry_username: ${{ secrets.HARBOR_USERNAME }}
+      registry_password: ${{ secrets.HARBOR_PASSWORD }}
+    ```
+
+=== "AWS ECR"
+
+    ```yaml
+    with:
+      image_name: my-app
+      registry: 123456789.dkr.ecr.eu-central-1.amazonaws.com
+    secrets:
+      registry_username: AWS
+      registry_password: ${{ secrets.AWS_ECR_TOKEN }}
+    ```
 
 !!! note
     For GHCR (default), no secrets are needed - the workflow uses `github.token` automatically.

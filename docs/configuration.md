@@ -14,6 +14,13 @@ Complete reference for all workflow inputs, outputs, and configuration options.
 | `platforms` | string | ❌ | `linux/amd64` | Target platforms (comma-separated) |
 | `registry` | string | ❌ | `ghcr.io` | Container registry URL |
 
+### Secrets
+
+| Secret | Required | Default | Description |
+|--------|----------|---------|-------------|
+| `registry_username` | ❌ | `github.actor` | Registry username |
+| `registry_password` | ❌ | `github.token` | Registry password or token |
+
 ### Outputs
 
 | Output | Description |
