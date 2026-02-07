@@ -1,5 +1,5 @@
 # renovate: datasource=docker depName=alpine
-ARG ALPINE_VERSION=3.19
+ARG ALPINE_VERSION=3.23
 
 # renovate: datasource=github-releases depName=hadolint/hadolint
 ARG HADOLINT_VERSION=v2.12.0
