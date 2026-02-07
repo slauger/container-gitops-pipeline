@@ -11,6 +11,8 @@ Reusable GitHub Actions workflows for container-based GitOps pipelines. Build Do
 - ⚡ **Zero Config** - Sensible defaults, no `.releaserc.json` required
 - 📌 **Pinned Dependencies** - All tools versioned and managed via Renovate
 
+## How it works
+
 ### Docker Image Versioning
 
 ```mermaid
@@ -101,49 +103,47 @@ flowchart LR
     class argocd,app clusterStyle
 ```
 
-## Quick Start: Docker Images
+## Quick Start
 
-Add `.github/workflows/build.yaml` to your repository:
+=== "Docker Images"
 
-```yaml
-name: Build
-on:
-  push:
-    branches: [main, develop]
+    Add `.github/workflows/build.yaml` to your repository:
 
-jobs:
-  build:
-    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
-    with:
-      image_name: my-app
-```
+    ```yaml
+    name: Build
+    on:
+      push:
+        branches: [main, develop]
 
-## Quick Start: Helm Charts
+    jobs:
+      build:
+        uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
+        with:
+          image_name: my-app
+    ```
 
-Add `.github/workflows/release.yaml` to your repository:
+=== "Helm Charts"
 
-```yaml
-name: Release
-on:
-  push:
-    branches: [main, develop]
+    Add `.github/workflows/release.yaml` to your repository:
 
-jobs:
-  release:
-    uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@v1
-    with:
-      chart_path: '.'
-```
+    ```yaml
+    name: Release
+    on:
+      push:
+        branches: [main, develop]
 
-## Documentation
+    jobs:
+      release:
+        uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@v1
+        with:
+          chart_path: '.'
+    ```
 
-| | |
-|---|---|
-| [Docker Build](https://slauger.github.io/container-gitops-pipeline/docker-build/) | Build and push container images |
-| [Helm OCI](https://slauger.github.io/container-gitops-pipeline/helm-oci/) | Package and push Helm charts |
-| [Multi-Architecture](https://slauger.github.io/container-gitops-pipeline/multi-arch/) | Native amd64 and arm64 builds |
-| [Configuration](https://slauger.github.io/container-gitops-pipeline/configuration/) | All workflow inputs and outputs |
+That's it! Your images/charts will automatically build and push on every commit.
 
-## License
+## Next Steps
 
-MIT
+- [Docker Build](docker-build.md) - Build and push container images
+- [Helm OCI](helm-oci.md) - Package and push Helm charts
+- [Multi-Architecture](multi-arch.md) - Native amd64 and arm64 builds
+- [Configuration](configuration.md) - All workflow inputs and outputs

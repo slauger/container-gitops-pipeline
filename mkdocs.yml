@@ -1,0 +1,58 @@
+site_name: Container GitOps Pipeline
+site_description: Reusable GitHub Actions workflows for container-based GitOps pipelines
+site_author: Simon Lauger
+site_url: https://slauger.github.io/container-gitops-pipeline
+
+repo_name: slauger/container-gitops-pipeline
+repo_url: https://github.com/slauger/container-gitops-pipeline
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - toc.follow
+    - content.code.copy
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - tables
+
+nav:
+  - Home: index.md
+  - Workflows:
+    - Docker Build: docker-build.md
+    - Helm OCI: helm-oci.md
+  - Reference:
+    - Multi-Architecture: multi-arch.md
+    - Configuration: configuration.md
+    - Builder Image: builder.md
