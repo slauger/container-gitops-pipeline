@@ -5,16 +5,17 @@ The `helm-oci.yaml` workflow packages and pushes Helm charts to an OCI registry 
 ## Basic Usage
 
 ```yaml
-name: Release
+name: Build
 on:
   push:
     branches: [main, develop]
 
 jobs:
-  release:
+  build:
     uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@v1
     with:
       chart_path: '.'
+    secrets: inherit
 ```
 
 ## Inputs

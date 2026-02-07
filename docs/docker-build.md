@@ -15,6 +15,7 @@ jobs:
     uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
     with:
       image_name: my-app
+    secrets: inherit
 ```
 
 ## Multi-Architecture Build
@@ -26,6 +27,7 @@ jobs:
     with:
       image_name: my-app
       platforms: 'linux/amd64,linux/arm64'
+    secrets: inherit
 ```
 
 See [Multi-Architecture](multi-arch.md) for details on how native runners are used.
@@ -94,7 +96,7 @@ No `.releaserc.json` is required - a default configuration is used automatically
 
 ## Private Registry
 
-For private registries (Docker Hub, Harbor, AWS ECR, etc.), pass credentials as secrets:
+For private registries, set the `REGISTRY_USERNAME` and `REGISTRY_PASSWORD` secrets in your repository and use `secrets: inherit`:
 
 ```yaml
 jobs:
@@ -103,44 +105,49 @@ jobs:
     with:
       image_name: my-app
       registry: registry.example.com
-    secrets:
-      registry_username: ${{ secrets.REGISTRY_USERNAME }}
-      registry_password: ${{ secrets.REGISTRY_PASSWORD }}
+    secrets: inherit
 ```
+
+The workflow expects these secrets (same as hugo-gitops-pipeline):
+
+| Secret | Description |
+|--------|-------------|
+| `REGISTRY_USERNAME` | Registry username |
+| `REGISTRY_PASSWORD` | Registry password or token |
 
 ### Examples
 
 === "Docker Hub"
 
+    Set secrets: `REGISTRY_USERNAME` = your Docker Hub username, `REGISTRY_PASSWORD` = your access token
+
     ```yaml
     with:
       image_name: my-app
       registry: docker.io
-    secrets:
-      registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
-      registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
+    secrets: inherit
     ```
 
 === "Harbor"
+
+    Set secrets: `REGISTRY_USERNAME` = Harbor username, `REGISTRY_PASSWORD` = Harbor password
 
     ```yaml
     with:
       image_name: my-app
       registry: harbor.example.com
-    secrets:
-      registry_username: ${{ secrets.HARBOR_USERNAME }}
-      registry_password: ${{ secrets.HARBOR_PASSWORD }}
+    secrets: inherit
     ```
 
 === "AWS ECR"
+
+    Set secrets: `REGISTRY_USERNAME` = `AWS`, `REGISTRY_PASSWORD` = ECR auth token
 
     ```yaml
     with:
       image_name: my-app
       registry: 123456789.dkr.ecr.eu-central-1.amazonaws.com
-    secrets:
-      registry_username: AWS
-      registry_password: ${{ secrets.AWS_ECR_TOKEN }}
+    secrets: inherit
     ```
 
 !!! note

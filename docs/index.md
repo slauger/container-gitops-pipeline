@@ -122,23 +122,25 @@ flowchart LR
         uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
         with:
           image_name: my-app
+        secrets: inherit
     ```
 
 === "Helm Charts"
 
-    Add `.github/workflows/release.yaml` to your repository:
+    Add `.github/workflows/build.yaml` to your repository:
 
     ```yaml
-    name: Release
+    name: Build
     on:
       push:
         branches: [main, develop]
 
     jobs:
-      release:
+      build:
         uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@v1
         with:
           chart_path: '.'
+        secrets: inherit
     ```
 
 That's it! Your images/charts will automatically build and push on every commit.

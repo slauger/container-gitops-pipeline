@@ -18,8 +18,10 @@ Complete reference for all workflow inputs, outputs, and configuration options.
 
 | Secret | Required | Default | Description |
 |--------|----------|---------|-------------|
-| `registry_username` | ❌ | `github.actor` | Registry username |
-| `registry_password` | ❌ | `github.token` | Registry password or token |
+| `REGISTRY_USERNAME` | ❌ | `github.actor` | Registry username |
+| `REGISTRY_PASSWORD` | ❌ | `github.token` | Registry password or token |
+
+Use `secrets: inherit` to pass secrets from the calling workflow.
 
 ### Outputs
 
@@ -40,6 +42,7 @@ jobs:
       context: .
       platforms: 'linux/amd64,linux/arm64'
       registry: ghcr.io
+    secrets: inherit
 ```
 
 ## Helm OCI Workflow
@@ -62,11 +65,12 @@ jobs:
 
 ```yaml
 jobs:
-  release:
+  build:
     uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@v1
     with:
       chart_path: charts/my-app
       registry: ghcr.io
+    secrets: inherit
 ```
 
 ## Semantic Release
