@@ -88,6 +88,22 @@ spec:
     targetRevision: 1.2.3
 ```
 
+## GitOps Integration
+
+For automated GitOps deployments, use [gitops-replacer](https://github.com/slauger/gitops-replacer) to update chart versions in your GitOps repository.
+
+Add a marker comment in your target file (e.g., umbrella `Chart.yaml`):
+
+```yaml
+dependencies:
+  # gitops-replacer: my-chart
+  - name: my-chart
+    version: "0.0.0-abc1234"
+    repository: oci://ghcr.io/owner
+```
+
+See [GitHub App Setup](github-app.md#usage-with-gitops-replacer-helm-charts) for the full workflow configuration.
+
 ## Semantic Release
 
 Like the Docker workflow, semantic-release determines versions on the `main` branch:

@@ -6,7 +6,7 @@ Reusable GitHub Actions workflows for container-based GitOps pipelines. Build Do
 
 - 🏷️ **Semantic Versioning** - Automated releases with [semantic-release](https://github.com/semantic-release/semantic-release)
 - 🖥️ **Multi-Architecture** - Native amd64 and arm64 builds via GitHub runners (no QEMU)
-- 🔄 **GitOps Ready** - Works with [gitops-image-replacer](https://github.com/slauger/gitops-image-replacer) for ArgoCD deployments
+- 🔄 **GitOps Ready** - Works with [gitops-image-replacer](https://github.com/slauger/gitops-image-replacer) for Docker images and [gitops-replacer](https://github.com/slauger/gitops-replacer) for Helm charts
 - 📦 **OCI Registry** - Push Docker images and Helm charts to any OCI-compliant registry
 - ⚡ **Zero Config** - Sensible defaults, no `.releaserc.json` required
 - 📌 **Pinned Dependencies** - All tools versioned and managed via Renovate
@@ -89,7 +89,7 @@ flowchart LR
     end
 
     image -->|"gitops-image-replacer"| values
-    chart -->|"gitops-image-replacer"| appCR
+    chart -->|"gitops-replacer"| appCR
     values --> argocd
     appCR --> argocd
     argocd -->|"sync"| app

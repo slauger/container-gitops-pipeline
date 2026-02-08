@@ -1,6 +1,6 @@
 # GitHub App Setup
 
-The pipeline can use a GitHub App to update image references in your GitOps repository via [gitops-image-replacer](https://github.com/slauger/gitops-image-replacer). This is required because the pipeline needs write access to a different repository than the one it's running in.
+The pipeline can use a GitHub App to update references in your GitOps repository via [gitops-image-replacer](https://github.com/slauger/gitops-image-replacer) (for Docker images) or [gitops-replacer](https://github.com/slauger/gitops-replacer) (for Helm charts). This is required because the pipeline needs write access to a different repository than the one it's running in.
 
 ## Why a GitHub App?
 
@@ -101,9 +101,9 @@ gh secret set GITOPS_APP_ID --body "123456"
 gh secret set GITOPS_APP_PRIVATE_KEY < path/to/private-key.pem
 ```
 
-## Usage with gitops-image-replacer
+## Usage with gitops-image-replacer (Docker Images)
 
-After the Docker build completes, use gitops-image-replacer to update your GitOps repository:
+After the Docker build completes, use gitops-image-replacer to update image references in your GitOps repository:
 
 ```yaml
 jobs:
@@ -132,6 +132,71 @@ jobs:
           repository: myorg/gitops
           file: apps/my-app/values.yaml
           image: ${{ needs.build.outputs.image }}
+```
+
+## Usage with gitops-replacer (Helm Charts)
+
+After the Helm chart build completes, use gitops-replacer to update chart version references in your GitOps repository.
+
+First, add a marker comment in your target file (e.g., `Chart.yaml`):
+
+```yaml
+dependencies:
+  # gitops-replacer: my-chart
+  - name: my-chart
+    version: "0.0.0-abc1234"
+    repository: oci://ghcr.io/myorg
+```
+
+Then configure the workflow:
+
+```yaml
+jobs:
+  build:
+    uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@v1
+    with:
+      chart_path: '.'
+
+  update-gitops:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.GITOPS_APP_ID }}
+          private-key: ${{ secrets.GITOPS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: gitops
+
+      - name: Install gitops-replacer
+        run: pip install gitops-replacer
+
+      - name: Update GitOps
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gitops-replacer --apply "${{ needs.build.outputs.version }}"
+```
+
+The `gitops-replacer.json` config in your chart repository:
+
+```json
+{
+  "gitops-replacer": [
+    {
+      "repository": "myorg/gitops",
+      "branch": "main",
+      "file": "apps/my-app/Chart.yaml",
+      "depName": "my-chart",
+      "when": "^refs/heads/main$"
+    }
+  ]
+}
 ```
 
 ## Verification
@@ -172,6 +237,8 @@ If you deploy to multiple GitOps repositories (e.g., different environments in d
 ## See Also
 
 - [Docker Build](docker-build.md)
+- [Helm OCI](helm-oci.md)
 - [Configuration](configuration.md)
-- [gitops-image-replacer](https://github.com/slauger/gitops-image-replacer)
+- [gitops-image-replacer](https://github.com/slauger/gitops-image-replacer) - For Docker images
+- [gitops-replacer](https://github.com/slauger/gitops-replacer) - For Helm charts
 - [GitHub Docs: Creating a GitHub App](https://docs.github.com/en/apps/creating-github-apps)
