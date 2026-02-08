@@ -34,6 +34,12 @@ on:
       REGISTRY_PASSWORD:
         description: 'Registry password (optional, defaults to github.token for GHCR)'
         required: false
+      GITOPS_APP_ID:
+        description: 'GitHub App ID for GitOps updates (optional, only needed if gitops-image-replacer.json exists)'
+        required: false
+      GITOPS_APP_PRIVATE_KEY:
+        description: 'GitHub App private key for GitOps updates (optional, only needed if gitops-image-replacer.json exists)'
+        required: false
     outputs:
       version:
         description: 'Released version'
@@ -249,3 +255,42 @@ jobs:
         id: result
         run: |
           echo "image=${{ inputs.registry }}/${{ github.repository_owner }}/${{ inputs.image_name }}:${{ needs.prepare.outputs.version }}" >> $GITHUB_OUTPUT
+
+  gitops:
+    needs: [prepare, manifest]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for GitOps config
+        id: config
+        run: |
+          if [ -f "gitops-image-replacer.json" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "::notice::No gitops-image-replacer.json found, skipping GitOps update"
+          fi
+
+      - name: Generate GitHub App token
+        id: app-token
+        if: steps.config.outputs.exists == 'true'
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.GITOPS_APP_ID }}
+          private-key: ${{ secrets.GITOPS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Install gitops-image-replacer
+        if: steps.config.outputs.exists == 'true'
+        run: pip install gitops-image-replacer
+
+      - name: Update GitOps repository
+        if: steps.config.outputs.exists == 'true'
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gitops-image-replacer --ci --apply "${{ needs.manifest.outputs.image }}"
