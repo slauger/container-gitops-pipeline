@@ -6,8 +6,19 @@
   ],
   "packageRules": [
     {
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash"
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
       "matchManagers": ["dockerfile"],
-      "groupName": "docker base images"
+      "groupName": "docker base images",
+      "automerge": true
     },
     {
       "matchManagers": ["github-actions"],
