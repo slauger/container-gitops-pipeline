@@ -2,7 +2,7 @@
 ARG ALPINE_VERSION=3.24
 
 # renovate: datasource=github-releases depName=hadolint/hadolint
-ARG HADOLINT_VERSION=v2.14.0
+ARG HADOLINT_VERSION=v2.15.1
 
 FROM alpine:${ALPINE_VERSION}
 
