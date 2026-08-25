@@ -4,31 +4,35 @@
     "config:recommended",
     ":semanticCommits"
   ],
+  "automerge": true,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "platformAutomerge": false,
+  "ignoreTests": true,
   "packageRules": [
     {
-      "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true,
-      "automergeType": "branch",
-      "automergeStrategy": "squash"
-    },
-    {
-      "matchUpdateTypes": ["major"],
-      "automerge": false
-    },
-    {
       "matchManagers": ["dockerfile"],
-      "groupName": "docker base images",
-      "automerge": true
+      "groupName": "docker base images"
     },
     {
       "matchManagers": ["github-actions"],
-      "groupName": "github actions",
-      "automerge": true
+      "groupName": "github actions"
     },
     {
       "matchManagers": ["npm"],
-      "groupName": "npm dependencies",
-      "automerge": true
+      "groupName": "npm dependencies"
+    },
+    {
+      "matchManagers": ["helmv3", "helm-values", "helm-requirements"],
+      "groupName": "helm"
+    },
+    {
+      "matchDatasources": ["helm"],
+      "groupName": "helm"
+    },
+    {
+      "matchDepNames": ["helm", "azure/setup-helm"],
+      "groupName": "helm"
     }
   ],
   "customManagers": [
