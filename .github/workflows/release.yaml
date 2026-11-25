@@ -65,8 +65,10 @@ jobs:
 
       - name: Release info
         if: steps.semantic.outputs.new_release_published == 'true'
+        env:
+          NEW_RELEASE_VERSION: ${{ steps.semantic.outputs.new_release_version }}
         run: |
-          echo "## Release v${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "## Release v${NEW_RELEASE_VERSION}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "New release published! Image build will start automatically." >> $GITHUB_STEP_SUMMARY
 
@@ -77,4 +79,4 @@ jobs:
     uses: ./.github/workflows/build-images.yaml
     with:
       version: ${{ needs.release.outputs.new_release_version }}
-    secrets: inherit
+    # build-images.yaml only needs GITHUB_TOKEN, which is always available

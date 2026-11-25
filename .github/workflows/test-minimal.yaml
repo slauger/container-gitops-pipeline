@@ -12,4 +12,6 @@ jobs:
   echo:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "${{ inputs.message }}"
+      - env:
+          MESSAGE: ${{ inputs.message }}
+        run: echo "${MESSAGE}"
