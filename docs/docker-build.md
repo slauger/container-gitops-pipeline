@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
+    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@main
     with:
       image_name: my-app
     secrets: inherit
@@ -23,7 +23,7 @@ jobs:
 ```yaml
 jobs:
   build:
-    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
+    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@main
     with:
       image_name: my-app
       platforms: 'linux/amd64,linux/arm64'
@@ -101,7 +101,7 @@ For private registries, set the `REGISTRY_USERNAME` and `REGISTRY_PASSWORD` secr
 ```yaml
 jobs:
   build:
-    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
+    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@main
     with:
       image_name: my-app
       registry: registry.example.com

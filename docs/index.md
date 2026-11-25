@@ -119,7 +119,7 @@ flowchart LR
 
     jobs:
       build:
-        uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
+        uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@main
         with:
           image_name: my-app
         secrets: inherit
@@ -137,7 +137,7 @@ flowchart LR
 
     jobs:
       build:
-        uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@v1
+        uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@main
         with:
           chart_path: '.'
         secrets: inherit

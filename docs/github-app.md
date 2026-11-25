@@ -103,36 +103,36 @@ gh secret set GITOPS_APP_PRIVATE_KEY < path/to/private-key.pem
 
 ## Usage with gitops-image-replacer (Docker Images)
 
-After the Docker build completes, use gitops-image-replacer to update image references in your GitOps repository:
+The `docker-build` and `helm-oci` workflows contain a built-in GitOps step. On `main` it runs [gitops-image-replacer](https://github.com/slauger/gitops-image-replacer) when a `gitops-image-replacer.json` exists in the repository root and authenticates with the GitHub App:
 
 ```yaml
 jobs:
   build:
-    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
+    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@main
     with:
       image_name: my-app
-
-  update-gitops:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate token
-        id: app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.GITOPS_APP_ID }}
-          private-key: ${{ secrets.GITOPS_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: gitops
-
-      - name: Update GitOps
-        uses: slauger/gitops-image-replacer@v1
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-          repository: myorg/gitops
-          file: apps/my-app/values.yaml
-          image: ${{ needs.build.outputs.image }}
+      gitops_owner: myorg  # optional, defaults to the repository owner
+    secrets:
+      GITOPS_APP_ID: ${{ secrets.GITOPS_APP_ID }}
+      GITOPS_APP_PRIVATE_KEY: ${{ secrets.GITOPS_APP_PRIVATE_KEY }}
 ```
+
+Example `gitops-image-replacer.json`:
+
+```json
+{
+  "gitops-image-replacer": [
+    {
+      "repository": "myorg/gitops",
+      "branch": "main",
+      "file": "apps/my-app/values.yaml",
+      "when": "^refs/heads/main$"
+    }
+  ]
+}
+```
+
+Without `gitops-image-replacer.json` the step is skipped and the GitHub App secrets are not needed.
 
 ## Usage with gitops-replacer (Helm Charts)
 
@@ -153,7 +153,7 @@ Then configure the workflow:
 ```yaml
 jobs:
   build:
-    uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@v1
+    uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@main
     with:
       chart_path: '.'
 

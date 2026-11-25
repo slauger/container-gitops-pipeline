@@ -7,7 +7,7 @@ The Docker Build workflow supports building for multiple architectures using nat
 ```yaml
 jobs:
   build:
-    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
+    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@main
     with:
       image_name: my-app
       platforms: 'linux/amd64,linux/arm64'
