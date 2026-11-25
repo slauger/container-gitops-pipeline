@@ -3,13 +3,14 @@
   "extends": [
     "config:recommended",
     ":semanticCommits",
-    ":semanticCommitTypeAll(fix)"
+    ":semanticCommitTypeAll(fix)",
+    "helpers:pinGitHubActionDigests"
   ],
+  "minimumReleaseAge": "3 days",
   "automerge": true,
   "automergeType": "pr",
   "automergeStrategy": "squash",
   "platformAutomerge": false,
-  "ignoreTests": true,
   "packageRules": [
     {
       "matchManagers": ["dockerfile"],
@@ -34,12 +35,17 @@
     {
       "matchDepNames": ["helm", "azure/setup-helm"],
       "groupName": "helm"
+    },
+    {
+      "description": "Major updates need a manual review",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["builder/Dockerfile"],
+      "managerFilePatterns": ["/builder/Dockerfile/"],
       "matchStrings": ["ARG HADOLINT_VERSION=(?<currentValue>v\\d+\\.\\d+\\.\\d+)"],
       "depNameTemplate": "hadolint/hadolint",
       "datasourceTemplate": "github-releases"
