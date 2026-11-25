@@ -110,7 +110,7 @@ jobs:
           cat "${CHART_PATH}/Chart.yaml"
 
       - name: Set up Helm
-        uses: azure/setup-helm@v5
+        uses: azure/setup-helm@2f5e7bc67f1f9972ab16657bb795f36d8f04de0e # v5
         with:
           version: 'v4.3.2'
 
