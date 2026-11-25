@@ -43,13 +43,6 @@
       "matchStrings": ["ARG HADOLINT_VERSION=(?<currentValue>v\\d+\\.\\d+\\.\\d+)"],
       "depNameTemplate": "hadolint/hadolint",
       "datasourceTemplate": "github-releases"
-    },
-    {
-      "customType": "regex",
-      "fileMatch": ["builder/Dockerfile"],
-      "matchStrings": ["ARG ALPINE_VERSION=(?<currentValue>\\d+\\.\\d+)"],
-      "depNameTemplate": "alpine",
-      "datasourceTemplate": "docker"
     }
   ]
 }

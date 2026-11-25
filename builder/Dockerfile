@@ -1,10 +1,9 @@
-# renovate: datasource=docker depName=alpine
-ARG ALPINE_VERSION=3.24
-
 # renovate: datasource=github-releases depName=hadolint/hadolint
 ARG HADOLINT_VERSION=v2.15.1
 
-FROM alpine:${ALPINE_VERSION}
+# Node.js base image (semantic-release >= 26 requires Node.js >= 26.13,
+# the Alpine nodejs package ships an older release)
+FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5
 
 # Install dependencies
 RUN apk add --no-cache \
@@ -13,8 +12,6 @@ RUN apk add --no-cache \
     git \
     jq \
     yq \
-    nodejs \
-    npm \
     docker-cli \
     helm
 
@@ -36,7 +33,8 @@ ENV PATH="/opt/semantic-release/node_modules/.bin:${PATH}"
 COPY default-releaserc.json /etc/semantic-release/default-releaserc.json
 
 # Verify installations
-RUN helm version && \
+RUN node --version && \
+    helm version && \
     yq --version && \
     hadolint --version && \
     semantic-release --version
