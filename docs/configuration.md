@@ -13,6 +13,7 @@ Complete reference for all workflow inputs, outputs, and configuration options.
 | `context` | string | ❌ | `.` | Build context path |
 | `platforms` | string | ❌ | `linux/amd64` | Target platforms (comma-separated) |
 | `registry` | string | ❌ | `ghcr.io` | Container registry URL |
+| `gitops_owner` | string | ❌ | repository owner | Owner of the GitOps repository (for the GitHub App token) |
 
 ### Secrets
 
@@ -20,6 +21,8 @@ Complete reference for all workflow inputs, outputs, and configuration options.
 |--------|----------|---------|-------------|
 | `REGISTRY_USERNAME` | ❌ | `github.actor` | Registry username |
 | `REGISTRY_PASSWORD` | ❌ | `github.token` | Registry password or token |
+| `GITOPS_APP_ID` | ❌ | - | GitHub App ID, only needed if `gitops-image-replacer.json` exists |
+| `GITOPS_APP_PRIVATE_KEY` | ❌ | - | GitHub App private key, only needed if `gitops-image-replacer.json` exists |
 
 Use `secrets: inherit` to pass secrets from the calling workflow.
 
@@ -35,7 +38,7 @@ Use `secrets: inherit` to pass secrets from the calling workflow.
 ```yaml
 jobs:
   build:
-    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
+    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@main
     with:
       image_name: my-app
       dockerfile: docker/Dockerfile.prod
@@ -54,6 +57,15 @@ jobs:
 | `chart_path` | string | ❌ | `.` | Path to Helm chart directory |
 | `registry` | string | ❌ | `ghcr.io` | OCI registry URL |
 
+### Secrets
+
+| Secret | Required | Default | Description |
+|--------|----------|---------|-------------|
+| `REGISTRY_USERNAME` | ❌ | `github.actor` | Registry username |
+| `REGISTRY_PASSWORD` | ❌ | `github.token` | Registry password or token |
+| `GITOPS_APP_ID` | ❌ | - | GitHub App ID, only needed if `gitops-image-replacer.json` exists |
+| `GITOPS_APP_PRIVATE_KEY` | ❌ | - | GitHub App private key, only needed if `gitops-image-replacer.json` exists |
+
 ### Outputs
 
 | Output | Description |
@@ -66,7 +78,7 @@ jobs:
 ```yaml
 jobs:
   build:
-    uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@v1
+    uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@main
     with:
       chart_path: charts/my-app
       registry: ghcr.io
@@ -92,7 +104,9 @@ Both workflows use semantic-release with a default configuration. You can overri
 
 ### Custom Configuration
 
-Create `.releaserc.json` in your repository root:
+Create `.releaserc.json` in your repository root. The workflows install only `semantic-release`, `@semantic-release/github` and `conventional-changelog-conventionalcommits` (plus the plugins bundled with semantic-release). Additional plugins such as `@semantic-release/changelog` or `@semantic-release/git` are not installed, so a configuration that uses them fails.
+
+Example that only uses the installed plugins:
 
 ```json
 {
@@ -101,10 +115,8 @@ Create `.releaserc.json` in your repository root:
     {"name": "develop", "prerelease": true}
   ],
   "plugins": [
-    "@semantic-release/commit-analyzer",
-    "@semantic-release/release-notes-generator",
-    "@semantic-release/changelog",
-    "@semantic-release/git",
+    ["@semantic-release/commit-analyzer", {"preset": "conventionalcommits"}],
+    ["@semantic-release/release-notes-generator", {"preset": "conventionalcommits"}],
     "@semantic-release/github"
   ]
 }

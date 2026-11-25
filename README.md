@@ -9,7 +9,7 @@ Reusable GitHub Actions workflows for container-based GitOps pipelines. Build Do
 - 🔄 **GitOps Ready** - Works with [gitops-image-replacer](https://github.com/slauger/gitops-image-replacer) for Docker images and [gitops-replacer](https://github.com/slauger/gitops-replacer) for Helm charts
 - 📦 **OCI Registry** - Push Docker images and Helm charts to any OCI-compliant registry
 - ⚡ **Zero Config** - Sensible defaults, no `.releaserc.json` required
-- 📌 **Pinned Dependencies** - All tools versioned and managed via Renovate
+- 📌 **Renovate-managed** - Actions, the builder image and its tools are kept up to date via Renovate
 
 ### Docker Image Versioning
 
@@ -105,6 +105,8 @@ flowchart LR
 
 ## Quick Start: Docker Images
 
+The examples reference `@main`, which always follows the latest state of the pipeline. For reproducible builds, pin a release tag instead (e.g. `@v1.6.30`, see [Releases](https://github.com/slauger/container-gitops-pipeline/releases)). There is no floating `v1` tag.
+
 Add `.github/workflows/build.yaml` to your repository:
 
 ```yaml
@@ -115,7 +117,7 @@ on:
 
 jobs:
   build:
-    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@v1
+    uses: slauger/container-gitops-pipeline/.github/workflows/docker-build.yaml@main
     with:
       image_name: my-app
     secrets: inherit
@@ -133,7 +135,7 @@ on:
 
 jobs:
   build:
-    uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@v1
+    uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@main
     with:
       chart_path: '.'
     secrets: inherit

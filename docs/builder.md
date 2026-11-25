@@ -54,12 +54,13 @@ docker run -it --rm \
 All tools in the builder image are version-pinned and updated via Renovate:
 
 ```dockerfile
-# renovate: datasource=docker depName=alpine
-ARG ALPINE_VERSION=3.19
-
 # renovate: datasource=github-releases depName=hadolint/hadolint
-ARG HADOLINT_VERSION=v2.12.0
+ARG HADOLINT_VERSION=v2.15.1
+
+FROM node:26-alpine@sha256:...
 ```
+
+The base image is `node:26-alpine` (digest-pinned), because semantic-release 26 requires Node.js >= 26.13.
 
 ## Semantic Release Plugins
 

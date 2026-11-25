@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@v1
+    uses: slauger/container-gitops-pipeline/.github/workflows/helm-oci.yaml@main
     with:
       chart_path: '.'
     secrets: inherit
